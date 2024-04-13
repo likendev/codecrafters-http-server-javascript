@@ -51,8 +51,17 @@ const server = net.createServer((socket) => {
         socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
         1;
       }
+    } else if (method === "POST" && path.startsWith("/files")) {
+      let content = request[request.length - 1];
+      const fileName = path.replace("/files/", "");
+      const directory = process.argv[3] ?? __dirname;
+      const filePath = pathModule.join(directory, fileName);
+      fs.writeFileSync(filePath, content);
+      socket.write("HTTP/1.1  201 OK\r\n");
+      socket.write("Content-Type: application/octet-stream\r\n");
+      1;
+      socket.write(`Content-Length: ${content.length}\r\n\r\n`);
     }
-
     if (path === "/") {
       socket.write(HTTP_STATUS[200]);
     } else {
