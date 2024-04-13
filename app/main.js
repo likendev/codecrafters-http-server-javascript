@@ -11,7 +11,9 @@ const HTTP_STATUS = {
 // Uncomment this to pass the first stage
 const server = net.createServer((socket) => {
   socket.on("data", (data) => {
-    const [method, path] = data.toString().split(" ");
+    const request = data.toString().split("\r\n");
+    const [method, path] = request[0].split(" ");
+    const userAgent = request[2].split(" ");
 
     if (method === "GET" && path.startsWith("/echo")) {
       const content = path.split("/echo/")[1];
@@ -20,6 +22,11 @@ const server = net.createServer((socket) => {
       socket.write("Content-Type: text/plain\r\n");
       socket.write(`Content-Length: ${content.length}\r\n`);
       socket.write(`\r\n${content}\r\n`);
+    } else if (method === "GET" && path.startsWith("/user-agent")){
+      socket.write("HTTP/1.1 200 OK\r\n");
+      socket.write("Content-Type: text/plain\r\n");
+      socket.write(`Content-Length: ${userAgent[1].length}\r\n`);
+      socket.write(`\r\n${userAgent[1]}\r\n`);
     }
 
     if (path === "/") {
